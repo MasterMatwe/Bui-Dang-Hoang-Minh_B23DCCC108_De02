@@ -1,97 +1,70 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# FootballFieldApp — Quản lý sân bóng mini
 
-# Getting Started
+Bài React Native CLI theo Đề số 2. Ứng dụng quản lý sân, lịch đặt và lưu dữ liệu cục bộ bằng AsyncStorage. Không dùng Expo, backend hoặc thư viện UI dựng sẵn.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Chạy trên máy Windows đã cấu hình
 
-## Step 1: Start Metro
+Mã nguồn nằm trong thư mục ban đầu. Đường dẫn không dấu dưới đây là liên kết tới cùng project để tránh lỗi công cụ native khi đường dẫn có tiếng Việt.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```powershell
+cd C:\Users\hoang\FootballFieldApp
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+. .\scripts\android-env.ps1
 ```
 
-## Step 2: Build and run your app
+Mở máy ảo Medium_Phone_API_37.0 qua Android Studio Device Manager. Tại terminal 1 chạy `npm.cmd start`. Tại terminal 2, nạp môi trường như trên rồi chạy:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```powershell
+npx.cmd react-native run-android --active-arch-only
 ```
 
-### iOS
+Lệnh tiêu chuẩn của đề `npx.cmd react-native run-android` cũng có thể dùng; cờ active-arch-only giúp build nhanh cho thiết bị đang kết nối. Nếu Android 17 hỏi quyền mạng cục bộ, cho phép để bản debug kết nối Metro. Mỗi máy mới cần `npm.cmd ci`, JDK và SDK phù hợp; xem [hướng dẫn môi trường](docs/MOI_TRUONG.md).
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Các chức năng theo đề
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+| Câu | Chức năng | Mã nguồn chính |
+| --- | --- | --- |
+| 1 | FlatList sân, tên/loại/giá, nhãn xanh/cam, đếm sân hoạt động | src/screens/FieldListScreen.tsx, src/components/FieldCard.tsx |
+| 2 | Form chung thêm/sửa, điền dữ liệu cũ, chọn loại/trạng thái, lỗi dưới ô | src/screens/FieldFormScreen.tsx |
+| 3 | Xoá có Alert xác nhận, chặn sân còn lịch | FieldListScreen, src/data/operations.ts |
+| 4 | Chi tiết, danh sách booking, Modal đặt, tính tiền ngay, disabled khi bảo trì | FieldDetailScreen, BookingModal |
+| 5 | Điện thoại/ngày/giờ hợp lệ, chống trùng, huỷ có Alert | src/utils/validation.ts, booking.ts, operations.ts |
+| 6 | Lưu sân và booking cùng snapshot, seed lần đầu 4 sân/3 lịch | src/storage/appStorage.ts, src/data/seed.ts |
+| 7 | Theme chung, StyleSheet, card/bóng, pressed/disabled/rỗng/lỗi, bàn phím, safe area | src/theme/colors.ts, src/components |
 
-```sh
-bundle install
+## Quy tắc sử dụng
+
+- Tên sân không trống, không trùng sau khi bỏ khoảng trắng đầu/cuối và chuẩn hoá hoa/thường; giá là số > 0.
+- Điện thoại gồm 10 chữ số, bắt đầu bằng 0. Ngày phải có thật và đúng dd/mm/yyyy.
+- Giờ bắt đầu từ 6 đến 22, thuê từ 1 đến 3 giờ, kết thúc không quá 23:00. Có thể nhập giờ lẻ: 17.5 = 17:30; dấu phẩy thập phân cũng được nhận.
+- Hai lượt cùng sân và cùng ngày bị xem là trùng khi các khoảng thời gian giao nhau. Lịch 17–19 và 19–20 được phép.
+- Sân bảo trì không nhận lượt đặt mới; các lịch cũ vẫn giữ.
+- Huỷ hết các lượt đặt của một sân trước khi xoá sân đó. Mọi thao tác xoá đều qua Alert xác nhận.
+- Dữ liệu mẫu chỉ sinh khi chưa có key lưu trữ. Xoá hết dữ liệu qua giao diện không làm dữ liệu mẫu xuất hiện lại.
+- Khi đọc/ghi bộ nhớ thất bại, ứng dụng báo lỗi; không tự thay dữ liệu cũ bằng dữ liệu mẫu.
+
+## Kiểm tra
+
+```powershell
+npm.cmd run check
 ```
 
-Then, and every time you update your native dependencies, run:
+Gồm TypeScript, ESLint và Jest. Các test kiểm tra validation, ranh giới trùng giờ, mutation nghiệp vụ, lỗi lưu trữ, ghi đồng thời, khôi phục dữ liệu và thao tác giao diện. Jest mô phỏng native modules; kiểm tra chạy thật trên Android được ghi riêng trong [kết quả nghiệm thu](docs/NGHIEM_THU.md).
 
-```sh
-bundle exec pod install
+## Cấu trúc
+
+`src/screens` chứa 3 màn hình; `components` chứa các phần giao diện và Modal; `context` nối state với repository; `data` chứa seed và nghiệp vụ; `storage` quản lý snapshot; `utils` chứa validation/định dạng/trùng lịch; `navigation` cấu hình Native Stack.
+
+Không lưu thành tiền vào booking vì đề không có trường này; tính bằng giá sân hiện tại nhân số giờ. Khi sửa giá sân, các khoản tiền hiển thị theo giá mới.
+
+## Đóng gói nộp bài
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-source.ps1 -FullName NguyenVanA -StudentId B22DCCN001
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Kết quả nằm trong `releases/NguyenVanA_B22DCCN001_De2.zip`. Thay họ tên và MSSV bằng thông tin thật. Script loại node_modules, các thư mục build, android/.gradle, .cxx, ios/Pods, .git, log và local.properties; giữ source, package-lock và Gradle wrapper.
 
-```sh
-# Using npm
-npm run ios
+Bản `releases/HoTen_MSSV_De2.zip` dùng tên chờ điền thông tin sinh viên; cần đổi tên trước khi nộp. Không cần nộp APK nếu giảng viên chỉ yêu cầu project.
 
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+[Phân tích và kế hoạch ban đầu](docs/PHAN_TICH_VA_KE_HOACH.md) · [Nghiệm thu](docs/NGHIEM_THU.md)

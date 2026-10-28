@@ -65,7 +65,18 @@ yarn-error.log
 
 # testing
 /coverage
+/releases/
 
+# Local environment verification logs
+/android-build.log
+/metro.log
+/metro-error.log
+/emulator.log
+/emulator-error.log
+/KET_QUA_KIEM_TRA.md
+/MOI_TRUONG.md
+/NGHIEM_THU.md
+/PHAN_TICH_VA_KE_HOACH.md
 # Yarn
 .yarn/*
 !.yarn/patches
